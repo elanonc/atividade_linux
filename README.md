@@ -1,4 +1,4 @@
-# PB UFC - Atividade Prática de Linux
+# Atividade Prática de Linux - Compass UOL - PB UFC
 
 Autor: Elano Nunes Caitano
 
@@ -55,6 +55,7 @@ Para realizar a criação da instância conforme foi definido, primeiro deve-se 
 - Crie a chave de segurança que vocêusará para se conectar a sua máquina:
   - Ao lado do painel de seleção de chaves, terá a opção de criar um novo par de chaves de segurança.
   - Adicione um nome e selecione a extensão do par de chaves entre .pem ou.ppk.
+- Na seção de segurança, selecione a VPC que foi criada na etapa anterior
 - Configurar grupo de segurança:
   - Clique em "Criar novo grupo de segurança".
   - Forneça um nome e uma descrição para o grupo de segurança.
