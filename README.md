@@ -241,6 +241,12 @@ Para tornar o Script Executável, deve-se dar permissão de execução ao script
 chmod +x is_apache_online.sh
 ```
 
-Abra o cronjob para edição `crontab -e`. Adicione a seguinte linha para executar o script a cada 5 minutos: `*/5 * * * * /caminho/completo/do/script/is_apache_online.sh`. Salve e saia do editor.
+Abra o cronjob para edição `crontab -e`. Adicione a seguinte linha para executar o script a cada 5 minutos:
 
-Agora, o script `is_apache_online.sh` será executado a cada 5 minutos, verificando o status do Apache e gravando os resultados em arquivos dentro do diretório NFS que você criou.
+```
+*/5 * * * * /caminho/completo/do/script/is_apache_online.sh
+```
+
+Salve e saia do editor. Para veficiar s eo cronjob foi configurado corretamente, execute `crontab -l`.
+
+Se tudo estiver configurado corretamente, o script `is_apache_online.sh` será executado a cada 5 minutos, verificando o status do Apache e gravando os resultados em arquivos dentro do diretório NFS que você criou.
