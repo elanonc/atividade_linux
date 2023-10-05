@@ -25,11 +25,11 @@ Autor: Elano Nunes Caitano
 
 # Instruções de execução
 
-Começando pela parte de configuração da infraestrutura na AWS.
+As instruções que virão a seguir tem como objetivo descrever as etapas da configuração de todos os requisitos listados anteriormente. Começando pela parte de configuração da infraestrutura na AWS.
 
 ## Criando a instância
 
-Para realizar a criação da instância conforme foi definido, primeiro deve-se configurar a VPC na qual ela será criada.
+Para realizar a criação da instância conforme foi definido, primeiro deve-se configurar a VPC na qual a instância será criada posteriormente.
 
 ### Configurando a VPC
 
@@ -45,19 +45,16 @@ Para realizar a criação da instância conforme foi definido, primeiro deve-se 
 4. **Conexão a um Internet Gateway**:
    Acesse a seção "Internet Gateways" no serviço "VPC", clique em "Criar Internet Gateway" e forneça um nome. Depois disso, selecione o Internet Gateway que você acabou de criar e clique em "Associar VPC" para que seja possível escolher a sua VPC na lista.
 
-## Criando a chave pública
-
-A criação do par de chaves é necessário para ser possível o acesso remoto a sua instância no EC2.
-
-Inicie navegando até o console de gerenciamento de EC2. Após isso, no painel inicial selecione a opção de `Pares de chaves`, e clicar no botão `Criar par de chaves`. Preencha os campos e selecione se deseja .pem ou .x.
-
 ### Criando a instância e configurando o Grupo de Segurança
 
-- Acesse o serviço "EC2", clique em "Instâncias" e em "Launch Instances" para iniciar a criação de instâncias.
+- Acesse o serviço "EC2", clique em "Instâncias" e em "Executar Instâncias" para iniciar a criação de instâncias EC2.
 - Adicione tags para identificar sua instância como achar melhor.
 - Escolha "Amazon Linux 2" como sua AMI.
 - Selecione "t3.small" como o tipo de instância.
 - Configure o tamanho do disco de 16 GB SSD.
+- Crie a chave de segurança que vocêusará para se conectar a sua máquina:
+  - Ao lado do painel de seleção de chaves, terá a opção de criar um novo par de chaves de segurança.
+  - Adicione um nome e selecione a extensão do par de chaves entre .pem ou.ppk.
 - Configurar grupo de segurança:
   - Clique em "Criar novo grupo de segurança".
   - Forneça um nome e uma descrição para o grupo de segurança.
@@ -69,56 +66,72 @@ Inicie navegando até o console de gerenciamento de EC2. Após isso, no painel i
       - HTTP (Porta 80/TCP)
       - HTTPS (Porta 443/TCP)
     - Defina a fonte para "0.0.0.0/0" para permitir o acesso de qualquer lugar.
+    - Ao fim, a configuração do seu grupo de segurança será semelhante a essa:
+      ![image](https://drive.google.com/uc?export=view&id=1DVKZdFv4uHFW_mgtf7626nHpRz0LeK7h)
 - Revise as configurações e inicie a sua instância EC2.
 
 ### Gerando o Elastic IP e alocando na instância EC2
 
 Pelo Console de Gerenciamento da AWS, no serviço do EC2, a seção "Elastic IPs", clique na opção de gerar um endereço IP elástico. Após gerar o endereço de IP, escolha opção "Associar endereço IP elástico" e selecione a instância criada anteriormente.
 
-**Ao fim dessa parte, teremos configurado a parte da AWS da atividade.**
+**Ao fim dessa parte, a configuração da infaestrutura na AWS da atividade terá sido realizada.**
 
 ---
 
-Dando início a parte de Linux da atividade, vamos começar a configuração do NFS.
+Dando início a parte de Linux da atividade, vamos começar pela configuração do NFS.
 
 ### Configurando o NFS no servidor
 
-- Se conecte com as instâncias que você criou, abra um terminal SSH para a instância e instale o servidor NFS executando o seguinte comando:
+No console de gerenciamento da AWS, ao selecionar a instância criada anteriormente, é possível conectar-se a ela dentro da própria AWS clicando no botão de conectar e depois clicando no botão de conectar que aparecerá no outro painel. Outra forma, é utilizar o par de chaves criado no processo de criação da instância, de forma que se conecte a sua máquina pessoal.
+
+![image](https://drive.google.com/uc?export=view&id=169L49vxtwYBlQwFmLEaYjd10iafw1aAa)
+
+Após ter se conectado com a instância, instale o servidor NFS executando o seguinte comando:
 
 ```bash
 sudo yum install nfs-utils -y
 ```
 
-Para configurá-lo, primeiro deve-se definir os diretórios que deseja compartilhar. Para este exemplo, vamos compartilhar um diretório chamado `/mnt/nfs-share`. Se necessário configure as permissões do diretório, para permitir o acesso apropriado.
+Para configurá-lo, primeiro deve-se definir os diretórios que deseja compartilhar. Para este exemplo, vamos compartilhar um diretório chamado `/mnt/nfs_share`. Se necessário configure as permissões do diretório, para permitir o acesso apropriado.
 
 Abra o arquivo `/etc/exports` para configurar as exportações NFS:
 
-Adicione uma linha no arquivo `/etc/exports` para compartilhar o diretório `/mnt/nfs-share` com permissões de leitura e gravação para todos os hosts na rede. Substitua `<subnet>` pela sua sub-rede, como por exemplo `192.168.1.0/24`:
+```bash
+sudo vim /etc/exports
+```
+
+Adicione uma linha no arquivo `/etc/exports` para compartilhar o diretório `/mnt/nfs_share` com permissões de leitura e gravação para todos os hosts na rede. Substitua `<ipPublico>` pelo ip publico da máquina do cliente que deseja fazer a conexão com o NFS, ou pela subnet da VPC, mas também há opção de colocar '\*' para que todos os ip's possam acessar a pasta compartilhada.
 
 ```
-/mnt/shared <subnet>(rw,sync,no_root_squash,no_all_squash)
+/mnt/nfs_share <ipPublico>(rw,sync,no_root_squash,no_all_squash)
 ```
 
 Após concluir, salve e saia do editor de texto.
 
-Agora, você precisa iniciar o serviço NFS e habilitá-lo para que ele seja iniciado automaticamente após a reinicialização da instância:
+Agora, será preciso iniciar o serviço NFS e habilitá-lo para que ele seja iniciado automaticamente após a reinicialização da instância:
 
 ```bash
 sudo systemctl start nfs
 sudo systemctl enable nfs
 ```
 
-Para verificar se o NFS está funcionando corretamente, você pode usar o seguinte comando:
+Para verificar se o NFS está funcionando corretamente, use o seguinte comando:
 
 ```bash
 sudo systemctl status nfs
 ```
 
-Se tudo estiver configurado corretamente, você deve ver o status "active (running)".
+Se tudo estiver configurado corretamente, será possível ver o status "active (running)".
+
+![image](https://drive.google.com/uc?export=view&id=14PO3udERMdAL14u3Ply9-HgDkRbd3spm)
 
 ### Configurar NFS no cliente
 
-Conecte-se a outra instância criada para o cliente. Nessa máquina será preciso criar um diretório onde o compartilhamento NFS será montado, como por exemplo: `/mnt/nfs`
+Conecte-se a outra máquina, que será a máquina do cliente. Uma opção, é criar outra instância EC2 na AWS e usá-la como máquina do cliente.
+
+![image](https://drive.google.com/uc?export=view&id=1_GahRbOrs_WhMEfsDRS1LrJmqzHYUKn4)
+
+Conecte-se a essa máquina, e crie um diretório onde o compartilhamento NFS será montado, como por exemplo: `/mnt/nfs`
 
 ```bash
 sudo mkdir -p /mnt/nfs
