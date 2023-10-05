@@ -106,6 +106,11 @@ Adicione uma linha no arquivo `/etc/exports` para compartilhar o diretório `/mn
 /mnt/nfs_share <ipPublico>(rw,sync,no_root_squash,no_all_squash)
 ```
 
+- rw: Leitura e escrita permitidas para clientes.
+- sync: Operações de gravação executadas de forma síncrona.
+- no_root_squash: O root do cliente terá as mesmas permissões do root do servidor NFS.
+- no_all_squash: Os usuários do cliente teráo as mesmas permissões do servidor NFS.
+
 Após concluir, salve e saia do editor de texto.
 
 Agora, será preciso iniciar o serviço NFS e habilitá-lo para que ele seja iniciado automaticamente após a reinicialização da instância:
@@ -124,6 +129,29 @@ sudo systemctl status nfs
 Se tudo estiver configurado corretamente, será possível ver o status "active (running)".
 
 ![image](https://drive.google.com/uc?export=view&id=14PO3udERMdAL14u3Ply9-HgDkRbd3spm)
+
+Para obter mais segurança e controle sobre o tráfego de rede, pode-se optar pela instalação de um firewall. Nesse caso, eu optei pela instalação do `firewalld`.
+
+```bash
+sudo yum install firewalld
+```
+
+Após a instalação, você pode habilitar e iniciar o serviço:
+
+```bash
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
+```
+
+Será necessário permitir as portas usadas pelo NFS, que incluem as portas 111 e 2049 (NFS). Para fazer isso, execute os seguintes comandos:
+
+```bash
+sudo firewall-cmd --add-service=nfs --permanent
+sudo firewall-cmd --add-service=rpc-bind --permanent
+sudo firewall-cmd --reload
+```
+
+Dessa forma, será possível manter a conexão com o cliente quando ela for realizada.
 
 ### Configurar NFS no cliente
 
