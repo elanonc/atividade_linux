@@ -1,6 +1,6 @@
 # PB UFC - Atividade Prática de Linux
 
-Repositório destinado a prática de Linux do PB DevSecOps da Compass UOL.
+Autor: Elano Nunes Caitano
 
 # Requisitos AWS
 
@@ -163,23 +163,35 @@ nano is_apache_online.sh
 
 Adicione o seguinte conteúdo ao script para verificar o status do Apache e gravar os resultados em arquivos:
 
-     ```bash
-     #!/bin/bash
+```bash
+    #!/bin/bash
 
-     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-     service_name="Apache"
-     service_status=$(systemctl is-active httpd)
+    #Script para obter o status do serviço apache
 
-     if [ "$service_status" = "active" ]; then
-       status_message="Online"
-       output_file="/nfs/seu_nome/service_online.txt"
-     else
-       status_message="Offline"
-       output_file="/nfs/seu_nome/service_offline.txt"
-     fi
+    SERVICO=httpd
 
-     echo "$timestamp $service_name $status_message" > "$output_file"
-     ```
+    STATUS=$(systemctl is-active $SERVICO)
+
+    MENSAGEM1="O $SERVICO está ONLINE"
+    MENSAGEM2="O $SERVICO está offline"
+
+    export LC_TIME=pt_BR.utf8
+
+    DATA=$(date '+%d de %B de %Y')
+    HORA=$(date '+%H:%M:%S')
+
+    if [ $STATUS == "active" ]; then
+        echo "$DATA - $HORA" >> /mnt/nfs_share/elanonunes/online.txt
+        echo "Status=$STATUS"  >> /mnt/nfs_share/elanonunes/online.txt
+        echo "$MENSAGEM1" >> /mnt/nfs_share/elanonunes/online.txt
+        echo "---------------------------------" >> /mnt/nfs_share/elanonunes/online.txt
+    else
+        echo "$DATA - $HORA" >> /mnt/nfs_share/elanonunes/offline.txt
+        echo "Status=$STATUS" >> /mnt/nfs_share/elanonunes/offline.txt
+        echo "$MENSAGEM2" >> /mnt/nfs_share/elanonunes/offline.txt
+        echo "---------------------------------" >> /mnt/nfs_share/elanonunes/offline.txt
+    fi
+```
 
 Para tornar o Script Executável, deve-se dar permissão de execução ao script:
 
